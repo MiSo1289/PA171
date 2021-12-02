@@ -13,10 +13,7 @@
 #include <string_view>
 #include <vector>
 
-#include <fmt/format.h>
-
 #include <pa171/coding/lzw_base.hpp>
-#include <pa171/utils/numeric.hpp>
 
 namespace pa171::coding::lzw
 {
@@ -30,7 +27,8 @@ public:
 class decoder
 {
 public:
-    explicit decoder(code_point_size_t code_size = 12u, options_t options = {})
+    explicit decoder(code_point_size_t const code_size = default_code_size,
+                     options_t const options = default_options)
         : code_size_{ code_size }
         , options_{ options }
     {
@@ -49,7 +47,7 @@ public:
              std::sentinel_for<I> S,
              std::output_iterator<std::byte> O>
     requires std::same_as<std::iter_value_t<I>, std::byte>
-    auto operator()(I begin, S const end, O result) -> std::pair<I, O>
+    auto operator()(I first, S const last, O result) -> std::pair<I, O>
     {
         init_table();
         block_end_ = block_size;
@@ -64,7 +62,7 @@ public:
                 init_table();
             }
 
-            auto const code_point = read_code_point(begin, end);
+            auto const code_point = read_code_point(first, last);
 
             if (not code_point)
             {
@@ -80,8 +78,8 @@ public:
             }
             else
             {
-                auto const acc_was_empty = not accumulator.empty();
                 auto decoded = table_[*code_point];
+                assert(not decoded.empty());
 
                 result = write_sequence(result, decoded);
 
@@ -91,26 +89,19 @@ public:
                     continue;
                 }
 
-                accumulator.append(decoded);
-
-                if (not acc_was_empty)
+                if (not accumulator.empty())
                 {
-                    if (decoded.size() != 1u)
-                    {
-                        throw decode_error{
-                            "Unexpected length of decoded sequence"
-                        };
-                    }
+                    accumulator.push_back(decoded.front());
 
                     table_.push_back(std::move(accumulator));
                     update_next_code_point();
-
-                    accumulator = std::move(decoded);
                 }
+
+                accumulator = std::move(decoded);
             }
         } while (not end_of_input);
 
-        return std::pair{ begin, result };
+        return std::pair{ first, result };
     }
 
 private:
@@ -183,7 +174,7 @@ private:
 
     template<std::input_iterator I, std::sentinel_for<I> S>
     requires std::same_as<std::iter_value_t<I>, std::byte>
-    [[nodiscard]] auto read_code_point(I& begin, S const end)
+    [[nodiscard]] auto read_code_point(I& first, S const last)
         -> std::optional<code_point_type>
     {
         static_assert(block_size >=
@@ -191,10 +182,10 @@ private:
 
         if (block_size - block_end_ < current_code_size_)
         {
-            while (block_end_ >= 8u and begin != end)
+            while (block_end_ >= 8u and first != last)
             {
                 block_ >>= 8u;
-                block_ |= std::to_integer<block_type>(*begin++)
+                block_ |= std::to_integer<block_type>(*first++)
                           << (block_size - 8u);
                 block_end_ -= 8u;
             }

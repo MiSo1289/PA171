@@ -1,7 +1,8 @@
-find_package(absl REQUIRED)
+find_package(abseil REQUIRED)
 find_package(Boost REQUIRED)
 find_package(fmt REQUIRED)
 find_package(lyra REQUIRED)
+find_package(range-v3 REQUIRED)
 find_package(stb REQUIRED)
 
 add_library(${PROJECT_NAME}_lib)
@@ -18,9 +19,10 @@ target_include_directories(
 target_link_libraries(
   ${PROJECT_NAME}_lib
   PUBLIC
-  absl::flat_hash_map
-  Boost::Boost
+  abseil::absl_flat_hash_map
+  boost::boost
   fmt::fmt
+  range-v3::range-v3
   stb::stb
 )
 

@@ -10,12 +10,10 @@
 #include <span>
 #include <string>
 #include <string_view>
-#include <vector>
 
 #include <absl/container/flat_hash_map.h>
 
 #include <pa171/coding/lzw_base.hpp>
-#include <pa171/utils/numeric.hpp>
 
 namespace pa171::coding::lzw
 {
@@ -23,7 +21,8 @@ namespace pa171::coding::lzw
 class encoder
 {
 public:
-    explicit encoder(code_point_size_t code_size = 12u, options_t options = {})
+    explicit encoder(code_point_size_t const code_size = default_code_size,
+                     options_t const options = default_options)
         : code_size_{ code_size }
         , options_{ options }
     {
@@ -41,60 +40,56 @@ public:
              std::sentinel_for<I> S,
              std::output_iterator<std::byte> O>
     requires std::same_as<std::iter_value_t<I>, std::byte>
-    auto operator()(I begin, S const end, O result) -> O
+    auto operator()(I first, S const last, O result) -> O
     {
         init_table();
         block_end_ = 0u;
 
-        auto accumulator = std::string{};
+        auto input_accumulator = std::string{};
+        auto next_code_word = std::string{};
         auto code_point = code_point_type{};
 
-        while (begin != end)
+        while (first != last)
         {
             if ((options_ & flush_full_dict) and not next_code_point_)
             {
                 init_table();
             }
 
-            do
+            auto const input_byte = *first++;
+            input_accumulator.push_back(static_cast<char>(input_byte));
+
+            if (auto const match = table_.find(input_accumulator);
+                match != table_.end())
             {
-                accumulator.push_back(static_cast<char>(*begin));
-
-                if (next_code_point_)
-                {
-                    if (auto const [match, inserted] =
-                            table_.try_emplace(accumulator, *next_code_point_);
-                        not inserted)
-                    {
-                        code_point = match->second;
-                        ++begin;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-                else
-                {
-                    // Table is full, do not create new code points
-
-                    if (auto const match = table_.find(accumulator);
-                        match != table_.end())
-                    {
-                        code_point = match->second;
-                        ++begin;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-            } while (begin != end);
+                code_point = match->second;
+                continue;
+            }
 
             result = write_code_point(result, code_point);
 
-            update_next_code_point();
-            accumulator.clear();
+            if (next_code_point_)
+            {
+                if (not next_code_word.empty())
+                {
+                    table_.emplace(std::move(next_code_word),
+                                   *next_code_point_);
+                    update_next_code_point();
+                }
+
+                next_code_word = std::move(input_accumulator);
+            }
+
+            input_accumulator = static_cast<char>(input_byte);
+
+            auto const match = table_.find(input_accumulator);
+            assert(match != table_.end());
+            code_point = match->second;
+        }
+
+        if (not input_accumulator.empty())
+        {
+            result = write_code_point(result, code_point);
         }
 
         result = write_code_point(result, end_input_code_point);
@@ -177,18 +172,19 @@ private:
         static_assert(block_size >=
                       std::numeric_limits<code_point_type>::digits);
 
+        if (block_size - block_end_ < current_code_size_)
+        {
+            while (block_end_ >= 8u)
+            {
+                *result++ = static_cast<std::byte>(block_ & 0xFFu);
+
+                block_ >>= 8u;
+                block_end_ -= 8u;
+            }
+        }
+
         block_ |= block_type{ code_point } << block_end_;
         block_end_ += current_code_size_;
-
-        if (block_end_ >= block_size)
-        {
-            result = std::ranges::copy(std::as_bytes(std::span{ &block_, 1u }),
-                                       result)
-                         .out;
-
-            block_end_ -= block_size;
-            block_ = code_point >> (code_point - block_end_);
-        }
 
         return result;
     }
@@ -196,11 +192,14 @@ private:
     template<std::output_iterator<std::byte> O>
     [[nodiscard]] auto flush_block(O result) -> O
     {
-        result = std::ranges::copy(std::as_bytes(std::span{ &block_, 1u })
-                                       .first(ceil_div(block_end_, 8u)),
-                                   result)
-                     .out;
-        block_end_ = 0u;
+        while (block_end_ > 0u)
+        {
+            *result++ = static_cast<std::byte>(block_ & 0xFFu);
+
+            auto const shift = std::min(block_index_type{ 8 }, block_end_);
+            block_ >>= shift;
+            block_end_ -= shift;
+        }
 
         return result;
     }
