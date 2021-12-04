@@ -92,6 +92,11 @@ public:
     return row_stride_;
   }
 
+  [[nodiscard]] auto empty() const noexcept -> bool
+  {
+    return width_ == 0u or height_ == 0u;
+  }
+
 private:
   I base_;
   std::size_t width_;
