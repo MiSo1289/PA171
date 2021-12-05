@@ -7,9 +7,9 @@ namespace pa171::coding::lzw
 
 using code_point_size_t = std::uint32_t;
 
-static constexpr auto default_code_size = code_point_size_t{12};
+static constexpr auto default_code_size = code_point_size_t{16};
 
-using options_t = unsigned;
+using options_t = std::uint32_t;
 
 enum : options_t
 {

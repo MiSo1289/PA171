@@ -1,5 +1,5 @@
 target_sources(
-  ${PROJECT_NAME}_lib
+  pa171
   PRIVATE
   numeric.cpp
   view_2d.cpp

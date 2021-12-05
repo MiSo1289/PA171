@@ -1,5 +1,5 @@
 target_sources(
-  ${PROJECT_NAME}_tests
+  pa171_tests
   PRIVATE
   test_lzw.cpp
   test_main.cpp

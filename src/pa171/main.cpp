@@ -7,27 +7,6 @@
 #include <pa171/image_encoder.hpp>
 #include <pa171/image_io.hpp>
 
-// garfield: 0.364629 with LZW-12
-//           0.382525 with LZW-16
-//           0.890721 with Haar and LZW-12
-//           0.934100 with Haar and LZW-16
-//           1.034360 with DB4 and LZW-12
-//           1.065290 with DB4 and LZW-16
-//
-// doge: 0.496941 with LZW-16
-//       0.533602 with Haar and LZW-16
-//       0.557631 with Haar and LZW-12
-//       0.576175 with DB4 and LZW-16
-//       0.584579 with DB4 and LZW-12
-//       0.601369 with LZW-12
-//
-// forest: 1.06102 with LZW-16
-//         1.15015 with Haar and LZW-12
-//         1.18188 with Haar and LZW-16
-//         1.20876 with DB4 and LZW-16
-//         1.21778 with LZW-12
-//         1.22264 with DB4 and LZW-12
-
 auto
 main(int const argc, char const* const* const argv) -> int
 {

@@ -12,7 +12,6 @@ class PA171(ConanFile):
     )
     requires = (
         "abseil/20210324.2",
-        "boost/1.77.0",
         "catch2/2.13.7",
         "fmt/8.0.1",
         "lyra/1.5.1",

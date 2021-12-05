@@ -1,5 +1,5 @@
 target_sources(
-  ${PROJECT_NAME}
+  pa171
   PRIVATE
   haar_iwt.cpp
 )

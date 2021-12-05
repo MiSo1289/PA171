@@ -413,49 +413,6 @@ public:
       }
     }
 
-    //        while (odd_first != odd_last)
-    //        {
-    //            assert(even_first != even_last);\
-//
-    //            auto approximation = *even_first++;
-    //            auto detail = *odd_first++;
-    //
-    //            ([&]<std::size_t... step_indices>(
-    //                std::index_sequence<step_indices...>)
-    //             {
-    //                 (
-    //                     [&]<std::size_t step_index>(
-    //                         std::integral_constant<std::size_t,
-    //                         step_index>)
-    //                     {
-    //                         if constexpr (step_index % 2 == 0)
-    //                         {
-    //                             auto const& predict =
-    //                             std::get<step_index>(steps_); detail -=
-    //                             predict(approximation);
-    //                         }
-    //                         else
-    //                         {
-    //                             auto const& update =
-    //                             std::get<step_index>(steps_);
-    //                             approximation += update(detail);
-    //                         }
-    //                     }(std::integral_constant<std::size_t,
-    //                     step_indices>{}),
-    //                     ...);
-    //             }(std::make_index_sequence<sizeof...(Steps)>{}));
-    //
-    //            *approximation_result++ = approximation;
-    //            *detail_result++ = detail;
-    //        }
-    //
-    //        if (even_first != even_last)
-    //        {
-    //            *approximation_result++ = *even_first++;
-    //            assert(even_first == even_last);
-    //        }
-
-    //    return { approximation_result, detail_result };
     return { approximation_last, detail_last };
   }
 

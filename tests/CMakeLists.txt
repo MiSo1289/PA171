@@ -4,12 +4,12 @@ find_package(Catch2 REQUIRED)
 
 include(Catch)
 
-add_executable(${PROJECT_NAME}_tests)
-catch_discover_tests(${PROJECT_NAME}_tests)
+add_executable(pa171_tests)
+catch_discover_tests(pa171_tests)
 target_link_libraries(
-  ${PROJECT_NAME}_tests
+  pa171_tests
   PRIVATE
-  ${PROJECT_NAME}_lib
+  pa171_lib
   catch2::catch2
 )
 

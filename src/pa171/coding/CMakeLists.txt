@@ -1,5 +1,5 @@
 target_sources(
-  ${PROJECT_NAME}_lib
+  pa171
   PRIVATE
   lzw_base.cpp
   lzw_decoder.cpp
