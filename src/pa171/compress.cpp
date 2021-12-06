@@ -31,7 +31,7 @@ main(int const argc, char const* const* const argv) -> int
     auto out_path = std::filesystem::path{};
 
     auto const parser =
-      lyra::arguments{}
+      lyra::cli_parser{}
         .add_argument(lyra::help(show_help))
         .add_argument(lyra::opt(show_stats)
                         .name("-s")
